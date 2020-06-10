@@ -424,6 +424,10 @@ namespace Avalonia.Controls.Primitives
                     {
                         e.Handled = true;
                     }
+                    else if (pointer.Type == RawPointerEventType.NonClientLeftButtonDown)
+                    {
+                        CloseCore(e);
+                    }
                 }
             }
         }
