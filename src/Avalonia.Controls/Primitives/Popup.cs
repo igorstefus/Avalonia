@@ -287,7 +287,7 @@ namespace Avalonia.Controls.Primitives
 
             DeferCleanup(topLevel.AddDisposableHandler(PointerPressedEvent, PointerPressedOutside, RoutingStrategies.Tunnel));
 
-            DeferCleanup(InputManager.Instance?.Process.Subscribe(ListenForNonClientClick));
+            DeferCleanup(InputManager.Instance?.PreProcess.Subscribe(FilterPointerEvents));
 
             var cleanupPopup = Disposable.Create((popupHost, handlerCleanup), state =>
             {
@@ -410,13 +410,21 @@ namespace Avalonia.Controls.Primitives
             Closed?.Invoke(this, new PopupClosedEventArgs(closeEvent));
         }
 
-        private void ListenForNonClientClick(RawInputEventArgs e)
+        private void FilterPointerEvents(RawInputEventArgs e)
         {
-            var mouse = e as RawPointerEventArgs;
-
-            if (!StaysOpen && mouse?.Type == RawPointerEventType.NonClientLeftButtonDown)
+            if (!StaysOpen && _openState is object && e is RawPointerEventArgs pointer)
             {
-                CloseCore(e);
+                if (pointer.Root == _openState.TopLevel)
+                {
+                    // When StaysOpen == true, prevent move, wheel and leave window events being
+                    // processed by parent window. Issue #3965.
+                    if (pointer.Type == RawPointerEventType.Move ||
+                        pointer.Type == RawPointerEventType.Wheel ||
+                        pointer.Type == RawPointerEventType.LeaveWindow)
+                    {
+                        e.Handled = true;
+                    }
+                }
             }
         }
 

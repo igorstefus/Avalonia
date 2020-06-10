@@ -129,7 +129,7 @@ namespace Avalonia.Input
             Contract.Requires<ArgumentNullException>(e != null);
 
             var mouse = (MouseDevice)e.Device;
-            if(mouse._disposed)
+            if(mouse._disposed || e.Handled)
                 return;
 
             Position = e.Root.PointToScreen(e.Position);
