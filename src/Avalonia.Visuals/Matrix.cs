@@ -56,7 +56,7 @@ namespace Avalonia
         /// <summary>
         /// HasInverse Property - returns true if this matrix is invertible, false otherwise.
         /// </summary>
-        public bool HasInverse => Math.Abs(GetDeterminant()) >= double.Epsilon;
+        public bool HasInverse => !MathUtilities.IsZero(GetDeterminant());
 
         /// <summary>
         /// The first element of the first row
@@ -288,7 +288,7 @@ namespace Avalonia
         {
             double d = GetDeterminant();
 
-            if (Math.Abs(d) < double.Epsilon)
+            if (MathUtilities.IsZero(d))
             {
                 throw new InvalidOperationException("Transform is not invertible.");
             }
@@ -322,14 +322,19 @@ namespace Avalonia
             }
         }
 
+        /// <summary>
+        /// Decomposes given matrix into transform operations.
+        /// </summary>
+        /// <param name="matrix">Matrix to decompose.</param>
+        /// <param name="decomposed">Decomposed matrix.</param>
+        /// <returns>The status of the operation.</returns>
         public static bool TryDecomposeTransform(Matrix matrix, out Decomposed decomposed)
         {
             decomposed = default;
 
             var determinant = matrix.GetDeterminant();
             
-            // Based upon constant in System.Numerics.Matrix4x4.
-            if (Math.Abs(determinant) < DecomposeEpsilon)
+            if (MathUtilities.IsZero(determinant))
             {
                 return false;
             }
